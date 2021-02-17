@@ -94,6 +94,13 @@ Bei US-Tastaturen fehlt in der mittleren Reihe die #-Taste. Wenn du den rechten 
 
 Diese Einstellung kann gut mit `mod3RAsReturn` kombiniert werden.
 
+### #-Taste (\\-Taste bei ANSI) als Level3-Modifier belassen
+Wenn die Enter-Taste als rechter Ebene3-Modifier verwendet wird, bleibt #-Taste (\\-Taste bei ANSI) dennoch als rechter Level3-Modifier bestehen. Dazu `keepHashKeyAsMod3R` auf `1`setzen:
+
+`keepHashKeyAsMod3R=1`
+
+Diese Einstellung kann ebenso mit `mod3RAsReturn` kombiniert werden.
+
 ### Tab-Taste als linken Level4-Modifier verwenden
 Bei US-Tastaturen fehlt die <-Taste (unten links). Wenn du den linken Ebene4-Modifier auf die Tab-Taste legen willst, setze den Wert von `tabKeyAsMod4L` auf `1`:
 

@@ -57,6 +57,7 @@ TCHAR customLayoutWcs[33];           // custom keyboard layout in UTF-16 (32 sym
 bool debugWindow = false;            // show debug output in a separate console window
 bool quoteAsMod3R = false;           // use quote/ä as right level 3 modifier
 bool returnAsMod3R = false;          // use return as right level 3 modifier
+bool keepHashKeyAsMod3R = false;	 // if true and returnAsMod3R = true, HASH_KEY stays right level 3 modifier
 bool tabAsMod4L = false;             // use tab as left level 4 modifier
 DWORD scanCodeMod3L = SCANCODE_CAPSLOCK_KEY;
 DWORD scanCodeMod3R = SCANCODE_HASH_KEY;       // depends on quoteAsMod3R and returnAsMod3R
@@ -926,8 +927,14 @@ bool isShift(KBDLLHOOKSTRUCT keyInfo) {
 }
 
 bool isMod3(KBDLLHOOKSTRUCT keyInfo) {
-	return keyInfo.scanCode == scanCodeMod3L
-	    || keyInfo.scanCode == scanCodeMod3R;
+		if (keepHashKeyAsMod3R){
+		return keyInfo.scanCode == scanCodeMod3L
+			|| keyInfo.scanCode == scanCodeMod3R
+			|| keyInfo.scanCode == SCANCODE_HASH_KEY;
+	} else {
+		return keyInfo.scanCode == scanCodeMod3L
+	    	|| keyInfo.scanCode == scanCodeMod3R;
+	}
 }
 
 bool isMod4(KBDLLHOOKSTRUCT keyInfo) {
@@ -1138,6 +1145,14 @@ void handleMod3Key(KBDLLHOOKSTRUCT keyInfo, bool isKeyUp) {
 				sendDownUp(VK_RETURN, 28, true); // send Return
 				level3modRightAndNoOtherKeyPressed = false;
 			}
+		} else if (keepHashKeyAsMod3R && (keyInfo.scanCode == SCANCODE_HASH_KEY)) {
+			level3modRightPressed = false;
+			modState.mod3 = level3modLeftPressed | level3modRightPressed;
+			if (mod3RAsReturn && level3modRightAndNoOtherKeyPressed) {
+				sendUp(keyInfo.vkCode, keyInfo.scanCode, false); // release Mod3_R
+				sendDownUp(VK_RETURN, 28, true); // send Return
+				level3modRightAndNoOtherKeyPressed = false;
+			}
 		} else { // scanCodeMod3L (CapsLock)
 			level3modLeftPressed = false;
 			modState.mod3 = level3modLeftPressed | level3modRightPressed;
@@ -1149,6 +1164,10 @@ void handleMod3Key(KBDLLHOOKSTRUCT keyInfo, bool isKeyUp) {
 		}
 	} else { // keyDown
 		if (keyInfo.scanCode == scanCodeMod3R) {
+			level3modRightPressed = true;
+			if (mod3RAsReturn)
+				level3modRightAndNoOtherKeyPressed = true;
+		} else if (keepHashKeyAsMod3R && (keyInfo.scanCode == SCANCODE_HASH_KEY)) {
 			level3modRightPressed = true;
 			if (mod3RAsReturn)
 				level3modRightAndNoOtherKeyPressed = true;
@@ -1440,6 +1459,7 @@ int main(int argc, char *argv[]) {
 
 		quoteAsMod3R = checkSetting("symmetricalLevel3Modifiers", ini);
 		returnAsMod3R = checkSetting("returnKeyAsMod3R", ini);
+		keepHashKeyAsMod3R = checkSetting("keepHashKeyAsMod3R", ini);
 		tabAsMod4L = checkSetting("tabKeyAsMod4L", ini);
 		capsLockEnabled = checkSetting("capsLockEnabled", ini);
 		shiftLockEnabled = checkSetting("shiftLockEnabled", ini);
@@ -1452,6 +1472,9 @@ int main(int argc, char *argv[]) {
 		mod3RAsReturn = checkSetting("mod3RAsReturn", ini);
 		mod4LAsTab = checkSetting("mod4LAsTab", ini);
 		debugWindow = checkSetting("debugWindow", ini);
+
+		if (!returnAsMod3R)
+			keepHashKeyAsMod3R = false;
 
 		if (capsLockEnabled)
 			shiftLockEnabled = false;
@@ -1469,6 +1492,7 @@ int main(int argc, char *argv[]) {
 		printf(" customLayout: %s\n", customLayout);
 		printf(" symmetricalLevel3Modifiers: %d\n", quoteAsMod3R);
 		printf(" returnKeyAsMod3R: %d\n", returnAsMod3R);
+		printf(" keepHashKeyAsMod3R: %d\n", keepHashKeyAsMod3R);
 		printf(" tabKeyAsMod4L: %d\n", tabAsMod4L);
 		printf(" capsLockEnabled: %d\n", capsLockEnabled);
 		printf(" shiftLockEnabled: %d\n", shiftLockEnabled);
@@ -1586,6 +1610,10 @@ int main(int argc, char *argv[]) {
 			} else if (strcmp(param, "returnKeyAsMod3R") == 0) {
 				returnAsMod3R = (strcmp(value, "1") == 0);
 				printf("\n returnKeyAsMod3R: %d", returnAsMod3R);
+
+			} else if (strcmp(param, "keepHashKeyAsMod3R") == 0) {
+				keepHashKeyAsMod3R = (strcmp(value, "1") == 0);
+				printf("\n keepHashKeyAsMod3R: %d", keepHashKeyAsMod3R);
 
 			} else if (strcmp(param, "tabKeyAsMod4L") == 0) {
 				tabAsMod4L = (strcmp(value, "1") == 0);
