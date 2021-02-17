@@ -610,6 +610,20 @@ void initLayout() {
 		wcscpy(mappingTableLevel1 + 30, L"haeiudtrnsf");
 		wcscpy(mappingTableLevel1 + 44, L"xqäüöbpwmj");
 
+	} else if (strcmp(layout, "my_koy") == 0) {
+		wcscpy(mappingTableLevel1 + 16, L"k.o,ypclmßz´");
+		wcscpy(mappingTableLevel1 + 30, L"haeiudtrnsf");
+		wcscpy(mappingTableLevel1 + 44, L"xqäüöbgwvj");
+
+		wcscpy(mappingTableLevel3 + 16, L"+*<>^~[]\"•#"); 
+		wcscpy(mappingTableLevel3 + 30, L"-/=:;?()'_@");
+		wcscpy(mappingTableLevel3 + 44, L"%\\|&$!{}`…");
+
+		wcscpy(mappingTableLevel4 +  2, L"ªº№⋮·£¤0¡¿−");
+		wcscpy(mappingTableLevel4 + 21, L"*789/;˝"); 
+		wcscpy(mappingTableLevel4 + 35, L"+456-:");
+		wcscpy(mappingTableLevel4 + 49, L",123.");
+
 	} else if (strcmp(layout, "kou") == 0
 				|| strcmp(layout, "vou") == 0) {
 		if (strcmp(layout, "kou") == 0) {
@@ -876,7 +890,13 @@ bool handleLayer3SpecialCases(KBDLLHOOKSTRUCT keyInfo) {
 			}
 			return false;
 		case 48:
-			if (strcmp(layout, "kou") != 0 && strcmp(layout, "vou") != 0) {
+			if (strcmp(layout, "kou") != 0 && strcmp(layout, "vou") != 0 && strcmp(layout, "my_koy") != 0) {
+				sendUnicodeChar(L'`', keyInfo);
+				return true;
+			}
+			return false;
+		case 52:
+			if (strcmp(layout, "my_koy") == 0) {
 				sendUnicodeChar(L'`', keyInfo);
 				return true;
 			}
@@ -1560,6 +1580,7 @@ int main(int argc, char *argv[]) {
 					|| strcmp(argv[i], "adnwzjf") == 0
 					|| strcmp(argv[i], "bone") == 0
 					|| strcmp(argv[i], "koy") == 0
+					|| strcmp(argv[i], "my_koy") == 0
 					|| strcmp(argv[i], "kou") == 0
 					|| strcmp(argv[i], "vou") == 0
 					|| strcmp(argv[i], "qwertz") == 0) {
